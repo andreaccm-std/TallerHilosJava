@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hilos en Java — Sistemas Operativos</title>
+<style>
+:root{--bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefec;--text:#1a1a18;--text2:#5f5e5a;--text3:#888780;--border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);--accent:#534AB7;--accent-bg:#EEEDFE;--accent-text:#3C3489;--teal:#0F6E56;--teal-bg:#E1F5EE;--teal-text:#085041;--amber:#854F0B;--amber-bg:#FAEEDA;--amber-text:#633806;--red:#A32D2D;--red-bg:#FCEBEB;--red-text:#791F1F;--green:#3B6D11;--green-bg:#EAF3DE;--green-text:#27500A;--radius:8px;--radius-lg:12px;--code-bg:#f1efe8;--code-text:#2c2c2a;}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1a;--bg2:#252522;--bg3:#2e2e2b;--text:#e8e6df;--text2:#b4b2a9;--text3:#888780;--border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.20);--accent:#AFA9EC;--accent-bg:#26215C;--accent-text:#CECBF6;--teal:#5DCAA5;--teal-bg:#04342C;--teal-text:#9FE1CB;--amber:#EF9F27;--amber-bg:#412402;--amber-text:#FAC775;--red:#F09595;--red-bg:#501313;--red-text:#F7C1C1;--green:#97C459;--green-bg:#173404;--green-text:#C0DD97;--code-bg:#2c2c2a;--code-text:#d3d1c7;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.7;color:var(--text);background:var(--bg);max-width:880px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:0.5px solid var(--border);}
+nav button{padding:6px 14px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.15s;}
+nav button:hover{background:var(--bg2);color:var(--text);}
+nav button.active{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);font-weight:500;}
+.section{display:none;}.section.visible{display:block;}
+h1{font-size:22px;font-weight:500;margin-bottom:0.3rem;}
+h2{font-size:18px;font-weight:500;margin:2rem 0 0.75rem;}
+h3{font-size:15px;font-weight:500;margin:1.5rem 0 0.5rem;}
+p{margin-bottom:0.9rem;color:var(--text);}
+.subtitle{color:var(--text2);font-size:13px;margin-bottom:1.5rem;}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:1rem 0;}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-right:4px;}
+.badge-purple{background:var(--accent-bg);color:var(--accent-text);}
+.badge-teal{background:var(--teal-bg);color:var(--teal-text);}
+.badge-amber{background:var(--amber-bg);color:var(--amber-text);}
+.badge-red{background:var(--red-bg);color:var(--red-text);}
+.badge-green{background:var(--green-bg);color:var(--green-text);}
+pre{background:var(--code-bg);color:var(--code-text);border-radius:var(--radius);padding:1rem 1.25rem;font-family:'Fira Mono','Courier New',monospace;font-size:12.5px;line-height:1.65;overflow-x:auto;margin:0.75rem 0 1.25rem;border:0.5px solid var(--border);white-space:pre;}
+code{font-family:'Fira Mono','Courier New',monospace;font-size:13px;background:var(--code-bg);color:var(--code-text);padding:1px 5px;border-radius:4px;}
+.info-box{border-left:3px solid var(--accent);background:var(--accent-bg);padding:0.75rem 1rem;margin:1rem 0;font-size:14px;color:var(--accent-text);}
+.warn-box{border-left:3px solid var(--amber);background:var(--amber-bg);padding:0.75rem 1rem;margin:1rem 0;font-size:14px;color:var(--amber-text);}
+.danger-box{border-left:3px solid var(--red);background:var(--red-bg);padding:0.75rem 1rem;margin:1rem 0;font-size:14px;color:var(--red-text);}
+.success-box{border-left:3px solid var(--teal);background:var(--teal-bg);padding:0.75rem 1rem;margin:1rem 0;font-size:14px;color:var(--teal-text);}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:1rem 0;}
+th{background:var(--bg2);font-weight:500;text-align:left;padding:10px 12px;border:0.5px solid var(--border);color:var(--text2);font-size:12px;text-transform:uppercase;letter-spacing:0.04em;}
+td{padding:10px 12px;border:0.5px solid var(--border);vertical-align:top;}
+tr:nth-child(even) td{background:var(--bg2);}
+
+/* QUIZ MEJORADO */
+.quiz-q{background:var(--bg2);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;}
+.quiz-q .qtext{font-weight:500;margin-bottom:1rem;font-size:15px;}
+.quiz-options{display:flex;flex-direction:column;gap:6px;}
+.quiz-option{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;border:0.5px solid var(--border);background:var(--bg);transition:border-color 0.15s,background 0.15s;}
+.quiz-option:hover{border-color:var(--border2);background:var(--bg3);}
+.quiz-option input{margin-top:3px;flex-shrink:0;accent-color:var(--accent);}
+.quiz-option .opt-text{font-size:14px;line-height:1.5;}
+.quiz-option.correct{border-color:var(--teal);background:var(--green-bg);}
+.quiz-option.correct .opt-text{color:var(--green-text);}
+.quiz-option.wrong{border-color:var(--red);background:var(--red-bg);}
+.quiz-option.wrong .opt-text{color:var(--red-text);}
+.quiz-result{font-size:13px;margin-top:10px;padding:8px 10px;border-radius:var(--radius);min-height:0;display:none;}
+.quiz-result.show{display:block;}
+.quiz-result.ok{background:var(--green-bg);color:var(--green-text);}
+.quiz-result.fail{background:var(--red-bg);color:var(--red-text);}
+.quiz-btn{margin-top:1.5rem;padding:8px 20px;border-radius:20px;border:0.5px solid var(--border2);background:var(--accent-bg);color:var(--accent-text);font-size:14px;font-weight:500;cursor:pointer;}
+
+/* SIMULADOR */
+.sim-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem;}
+.sim-btns button{padding:6px 14px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text);font-size:13px;cursor:pointer;}
+.sim-btns button:hover{background:var(--bg2);}
+.sim-btns button.active-sim{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent);font-weight:500;}
+.sim-desc{background:var(--bg2);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:0.75rem;font-size:14px;line-height:1.6;}
+.sim-desc .sim-desc-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.sim-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0.5rem;}
+.sim-code{background:var(--code-bg);color:var(--code-text);border-radius:var(--radius);padding:1rem;font-family:'Fira Mono',monospace;font-size:11.5px;line-height:1.6;overflow:auto;max-height:360px;border:0.5px solid var(--border);white-space:pre;}
+.sim-output{background:var(--bg3);color:var(--text);border-radius:var(--radius);padding:1rem;font-family:'Fira Mono',monospace;font-size:12px;min-height:180px;max-height:360px;overflow-y:auto;border:0.5px solid var(--border);white-space:pre-wrap;line-height:1.6;}
+.run-btn{padding:7px 16px;border-radius:20px;border:0.5px solid var(--accent);background:var(--accent-bg);color:var(--accent-text);font-size:13px;cursor:pointer;font-weight:500;margin-top:8px;}
+
+/* RESTO */
+.states{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:1rem 0;}
+.state-node{text-align:center;padding:10px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;min-width:80px;}
+.state-arrow{font-size:20px;color:var(--text3);padding:0 4px;}
+.state-label{font-size:10px;color:var(--text3);display:block;margin-top:2px;font-weight:400;}
+.checklist{list-style:none;margin:0.5rem 0 1rem;}
+.checklist li{padding:5px 0;font-size:14px;display:flex;gap:8px;align-items:flex-start;}
+.checklist li::before{content:"✓";color:var(--teal);font-weight:500;flex-shrink:0;}
+.file-row{display:flex;align-items:flex-start;padding:10px 12px;border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:6px;background:var(--bg);font-size:14px;}
+.file-row .fname{font-family:monospace;font-weight:500;}
+.file-row .fdesc{color:var(--text2);font-size:12px;margin-top:2px;}
+hr{border:none;border-top:0.5px solid var(--border);margin:1.5rem 0;}
+.analogy-box{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin:1rem 0;background:var(--bg2);}
+.analogy-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+</style>
+</head>
+<body>
+
+<h1>Hilos en Java</h1>
+<p class="subtitle">Sistemas Operacionales — Politécnico Grancolombiano</p>
+
+<nav id="main-nav">
+  <button class="active" onclick="show('teoria')">1. Conceptos</button>
+  <button onclick="show('runnable')">2. Runnable</button>
+  <button onclick="show('estados')">3. Ciclo de vida</button>
+  <button onclick="show('creacion')">4. Creación</button>
+  <button onclick="show('sincronizacion')">5. Sincronización</button>
+  <button onclick="show('simulador')">6. Simulador</button>
+  <button onclick="show('practica')">7. Práctica y quiz</button>
+</nav>
+
+<!-- ═══════ 1. CONCEPTOS ═══════ -->
+<div id="teoria" class="section visible">
+  <h2>¿Qué es un hilo?</h2>
+  <p>Un <strong>proceso</strong> es un programa en ejecución. Cuando abres Chrome, eso es un proceso. Un <strong>hilo</strong> (<em>thread</em>) es una tarea dentro de ese proceso. Chrome tiene un hilo para mostrar la interfaz, otro para descargar archivos, otro para reproducir audio — todos corren "al mismo tiempo" dentro del mismo programa.</p>
+
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía — la cocina del restaurante</div>
+    <p style="margin:0;font-size:14px;">El restaurante es el <strong>proceso</strong>. Cada cocinero es un <strong>hilo</strong>. Todos comparten la misma cocina (memoria), los mismos ingredientes (variables) y los mismos utensilios (archivos). Trabajan en paralelo, pero si dos cocineros intentan usar el mismo cuchillo al mismo tiempo sin coordinarse, hay problema.</p>
+  </div>
+
+  <h3>Proceso vs. hilo</h3>
+  <table>
+    <tr><th>Aspecto</th><th>Proceso</th><th>Hilo</th></tr>
+    <tr><td>Memoria</td><td>Espacio propio y aislado</td><td>Compartida con todos los hilos del proceso</td></tr>
+    <tr><td>Creación</td><td>Costosa (copia de memoria)</td><td>Barata (solo stack y registros)</td></tr>
+    <tr><td>Comunicación</td><td>Requiere IPC (pipes, sockets)</td><td>Directa: variables compartidas</td></tr>
+    <tr><td>Fallo</td><td>Aislado: no afecta otros procesos</td><td>Un hilo puede tumbar todo el proceso</td></tr>
+    <tr><td>Cambio de contexto</td><td>Lento (cambia espacio de memoria)</td><td>Rápido (mismo espacio, solo registros)</td></tr>
+  </table>
+
+  <h3>¿Para qué se usan los hilos?</h3>
+  <div class="card-grid">
+    <div class="card"><span class="badge badge-purple">Concurrencia</span><p style="margin-top:8px;font-size:14px;">Interfaz responsiva mientras se descarga un archivo en segundo plano.</p></div>
+    <div class="card"><span class="badge badge-teal">Paralelismo</span><p style="margin-top:8px;font-size:14px;">En CPUs multinúcleo, repartir trabajo pesado entre núcleos: comprimir imágenes, entrenar modelos.</p></div>
+    <div class="card"><span class="badge badge-amber">Servidores</span><p style="margin-top:8px;font-size:14px;">Un hilo por cliente. Un servidor web atiende miles de conexiones sin bloquear a los demás.</p></div>
+    <div class="card"><span class="badge badge-green">Eficiencia I/O</span><p style="margin-top:8px;font-size:14px;">Mientras un hilo espera que el disco lea un archivo, otro hilo avanza con otro trabajo.</p></div>
+  </div>
+
+  <h3>Lo que comparte y lo que no</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1rem 0;">
+    <div class="card">
+      <p style="font-size:12px;font-weight:500;color:var(--teal);margin-bottom:8px;">COMPARTIDO entre hilos</p>
+      <ul class="checklist"><li>Heap (objetos, instancias)</li><li>Variables de clase (<code>static</code>)</li><li>Archivos abiertos</li><li>Código del programa</li></ul>
+    </div>
+    <div class="card">
+      <p style="font-size:12px;font-weight:500;color:var(--accent);margin-bottom:8px;">PRIVADO de cada hilo</p>
+      <ul class="checklist" style="--teal:var(--accent);"><li>Stack (variables locales)</li><li>Contador de programa (PC)</li><li>Registros del procesador</li><li>Estado de excepción activa</li></ul>
+    </div>
+  </div>
+
+  <div class="warn-box">La memoria compartida es la mayor ventaja de los hilos y su mayor riesgo. Dos hilos modificando la misma variable sin coordinación producen resultados incorrectos. A eso se le llama <strong>condición de carrera</strong>.</div>
+</div>
+
+<!-- ═══════ 2. RUNNABLE ═══════ -->
+<div id="runnable" class="section">
+  <h2>¿Qué es <code>Runnable</code>?</h2>
+  <p><code>Runnable</code> es una <strong>interfaz de Java</strong> que representa una tarea: algo que se puede ejecutar. Tiene un solo método obligatorio: <code>run()</code>, que contiene el código que el hilo ejecutará.</p>
+
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía — la receta y el cocinero</div>
+    <p style="margin:0;font-size:14px;"><code>Runnable</code> es como una <strong>receta de cocina</strong>. Describe qué hay que hacer, pero no lo hace sola. Un cocinero (<code>Thread</code>) toma la receta y la ejecuta. Puedes darle la misma receta a varios cocineros para que trabajen en paralelo.</p>
+  </div>
+
+  <h3>¿Por qué existe <code>Runnable</code>?</h3>
+  <p>En Java, hay dos formas de decirle a un <code>Thread</code> qué debe hacer:</p>
+  <p><strong>Forma 1:</strong> heredar de <code>Thread</code> y sobreescribir <code>run()</code> directamente.</p>
+  <p><strong>Forma 2:</strong> crear un objeto <code>Runnable</code> con la tarea, y pasárselo al <code>Thread</code> como parámetro.</p>
+
+  <div class="warn-box">Java no tiene herencia múltiple. Si tu clase extiende <code>Thread</code>, ya no puede extender ninguna otra clase. Por eso se prefiere <code>Runnable</code>: separas la tarea del mecanismo de ejecución, y tu clase queda libre para extender lo que necesite.</div>
+
+  <h3><code>Runnable</code> como interfaz funcional</h3>
+  <p>Como <code>Runnable</code> tiene un solo método (<code>run()</code>), Java lo reconoce como <strong>interfaz funcional</strong>. Eso permite escribirlo con una <strong>lambda</strong>, que es una forma corta de definir una función sin nombre:</p>
+
+<pre>// Forma larga: clase anónima que implementa Runnable explícitamente
+Runnable tarea = new Runnable() {
+    public void run() {
+        System.out.println("Hola desde el hilo");
+    }
+};
+
+// Forma corta: lambda — hace exactamente lo mismo con menos código
+// () son los parámetros (run no recibe ninguno)
+// -> separa parámetros del cuerpo
+Runnable tarea = () -> System.out.println("Hola desde el hilo");
+
+// Darle la tarea a un Thread y arrancarlo
+Thread t = new Thread(tarea, "Hilo-1");
+t.start();</pre>
+
+  <div class="info-box">La lambda <code>() -> ...</code> equivale a implementar el método <code>run()</code>. Los <code>()</code> son los parámetros (ninguno aquí) y lo que sigue de <code>-></code> es el cuerpo del método.</div>
+
+  <h3>¿Cuándo usar cada forma?</h3>
+  <table>
+    <tr><th>Situación</th><th>Recomendación</th></tr>
+    <tr><td>Tarea simple, pocas líneas</td><td>Lambda directamente en el constructor del Thread</td></tr>
+    <tr><td>Tarea reutilizable o con estado interno</td><td>Clase que implementa <code>Runnable</code></td></tr>
+    <tr><td>Necesitas acceder a métodos de Thread (prioridad, nombre)</td><td>Clase que extiende <code>Thread</code></td></tr>
+  </table>
+</div>
+
+<!-- ═══════ 3. ESTADOS ═══════ -->
+<div id="estados" class="section">
+  <h2>Ciclo de vida de un hilo en Java</h2>
+  <p>Un hilo en Java pasa por 6 estados definidos en <code>Thread.State</code>. Conocerlos es clave para depurar problemas de concurrencia.</p>
+
+  <div style="background:var(--bg2);border-radius:var(--radius-lg);padding:1.5rem;margin:1rem 0;overflow-x:auto;">
+    <div class="states">
+      <div><div class="state-node" style="background:var(--accent-bg);color:var(--accent-text);">NEW<span class="state-label">new Thread()</span></div></div>
+      <div class="state-arrow">→</div>
+      <div><div class="state-node" style="background:var(--green-bg);color:var(--green-text);">RUNNABLE<span class="state-label">t.start()</span></div></div>
+      <div class="state-arrow">→</div>
+      <div><div class="state-node" style="background:var(--teal-bg);color:var(--teal-text);">RUNNING<span class="state-label">scheduler</span></div></div>
+      <div class="state-arrow">→</div>
+      <div><div class="state-node" style="background:var(--bg3);color:var(--text2);">TERMINATED<span class="state-label">run() retorna</span></div></div>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:8px;">Los estados BLOCKED, WAITING y TIMED_WAITING son desvíos temporales desde RUNNING</p>
+  </div>
+
+  <table>
+    <tr><th>Estado</th><th>Qué significa</th><th>Cómo llega allí</th></tr>
+    <tr><td><span class="badge badge-purple">NEW</span></td><td>Objeto creado, hilo aún no iniciado</td><td><code>new Thread(...)</code></td></tr>
+    <tr><td><span class="badge badge-green">RUNNABLE</span></td><td>Listo para ejecutar; puede estar esperando CPU o usándola</td><td><code>t.start()</code></td></tr>
+    <tr><td><span class="badge badge-amber">BLOCKED</span></td><td>Esperando entrar a un bloque <code>synchronized</code></td><td>Otro hilo tiene el monitor</td></tr>
+    <tr><td><span class="badge badge-purple">WAITING</span></td><td>Esperando indefinidamente una notificación</td><td><code>wait()</code>, <code>join()</code></td></tr>
+    <tr><td><span class="badge badge-amber">TIMED_WAITING</span></td><td>Esperando por un tiempo máximo</td><td><code>sleep(ms)</code>, <code>join(ms)</code></td></tr>
+    <tr><td><span class="badge" style="background:var(--bg3);color:var(--text2);">TERMINATED</span></td><td>Hilo terminó su ejecución</td><td><code>run()</code> retornó o lanzó excepción</td></tr>
+  </table>
+
+  <div class="info-box">Llamar <code>t.start()</code> no ejecuta <code>run()</code> inmediatamente. Pone el hilo en RUNNABLE y el scheduler del SO decide cuándo darle CPU. Pueden pasar milisegundos antes de que realmente corra.</div>
+  <div class="danger-box">Error frecuente: llamar <code>t.run()</code> directamente no crea ningún hilo nuevo. Ejecuta el método en el hilo actual como una llamada normal. El programa corre secuencial, no concurrente.</div>
+</div>
+
+<!-- ═══════ 4. CREACIÓN ═══════ -->
+<div id="creacion" class="section">
+  <h2>Dos formas de crear hilos en Java</h2>
+
+  <h3>Forma 1 — Extender <code>Thread</code></h3>
+<pre>// SinRunnable.java
+public class SinRunnable {
+
+    // Subclase de Thread: sobrescribimos run() con lo que queremos ejecutar
+    static class MiThread extends Thread {
+        public void run() {
+            // getName() retorna el nombre asignado al hilo
+            System.out.println("Hola desde run() en: " + getName());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("Hola desde main en: "
+                           + Thread.currentThread().getName());
+
+        Thread t = new MiThread();  // estado: NEW (creado, aún no iniciado)
+        t.start();                  // crea el hilo del SO y ejecuta run() en él
+        t.join();                   // main se bloquea hasta que t termine
+
+        System.out.println("Fin main");
+    }
+}</pre>
+  <div class="warn-box">Limitación: si <code>MiThread</code> extiende <code>Thread</code>, no puede extender ninguna otra clase. En proyectos reales esto es muy restrictivo.</div>
+
+  <h3>Forma 2 — Implementar <code>Runnable</code> (recomendada)</h3>
+<pre>// ConRunnable.java
+public class ConRunnable {
+    public static void main(String[] args) throws Exception {
+        System.out.println("Hola desde main en: "
+                           + Thread.currentThread().getName());
+
+        // Lambda que implementa Runnable.run()
+        // Thread.currentThread().getName() imprime el nombre del hilo que ejecuta esta línea
+        Runnable tarea = () ->
+            System.out.println("Hola desde run() en: "
+                               + Thread.currentThread().getName());
+
+        // Thread recibe la tarea y un nombre descriptivo
+        Thread t = new Thread(tarea, "Hilo-1");
+        t.start();  // arranca el hilo; run() se ejecutará en él
+        t.join();   // main espera a que t termine antes de continuar
+
+        System.out.println("Fin main");
+    }
+}</pre>
+
+  <h3>Reusar la misma tarea en varios hilos</h3>
+<pre>// RunnableJoin.java
+public class RunnableJoin {
+    public static void main(String[] args) throws Exception {
+
+        // Un solo Runnable reutilizado en dos hilos distintos
+        // Cada hilo ejecuta el mismo código, pero de forma independiente
+        Runnable tarea = () ->
+            System.out.println("Trabajo en "
+                               + Thread.currentThread().getName());
+
+        Thread t1 = new Thread(tarea, "Trabajador-1");
+        Thread t2 = new Thread(tarea, "Trabajador-2");
+
+        t1.start();  // lanza t1
+        t2.start();  // lanza t2 sin esperar a que t1 termine
+
+        // join() = punto de sincronización: main espera a que ambos terminen
+        t1.join();
+        t2.join();
+
+        // Esta línea solo se imprime cuando AMBOS hilos terminaron
+        System.out.println("Listo: todos terminaron");
+    }
+}</pre>
+
+  <h3><code>sleep()</code> y entrelazado de hilos</h3>
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía</div>
+    <p style="margin:0;font-size:14px;"><code>Thread.sleep(300)</code> es como un cocinero que dice "esperen 5 minutos mientras el agua hierve". Cede la CPU voluntariamente y el sistema puede usarla para avanzar con otros hilos.</p>
+  </div>
+<pre>// SleepYNombre.java
+public class SleepYNombre {
+
+    // Clase interna con estado propio (nombre del worker)
+    static class Worker implements Runnable {
+        private final String nombre;
+        Worker(String nombre) { this.nombre = nombre; }
+
+        public void run() {
+            for (int i = 1; i &lt;= 3; i++) {
+                // Imprime: qué worker, qué paso, en qué hilo del SO corre
+                System.out.println(nombre + " paso " + i
+                                   + " en " + Thread.currentThread().getName());
+                try {
+                    Thread.sleep(300);  // cede CPU por 300ms (TIMED_WAITING)
+                } catch (InterruptedException e) {
+                    // Si interrumpen el hilo durante el sleep,
+                    // restauramos la bandera en lugar de ignorarla
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Thread a = new Thread(new Worker("A"), "Hilo-A");
+        Thread b = new Thread(new Worker("B"), "Hilo-B");
+        a.start(); b.start();
+        a.join();  b.join();
+        System.out.println("Terminaron A y B");
+    }
+}</pre>
+  <div class="info-box">El orden de salida de A y B varía en cada ejecución. No está garantizado porque el scheduler decide cuándo cada hilo retoma la CPU al despertar del <code>sleep</code>. Ejecuta el programa varias veces para comprobarlo.</div>
+</div>
+
+<!-- ═══════ 5. SINCRONIZACIÓN ═══════ -->
+<div id="sincronizacion" class="section">
+  <h2>Condición de carrera y sincronización</h2>
+
+  <h3>El problema: <code>valor++</code> no es atómico</h3>
+  <p>Una operación <strong>atómica</strong> es aquella que el procesador ejecuta de una sola vez, sin interrupciones. <code>valor++</code> parece una operación, pero en realidad son tres pasos del bytecode Java:</p>
+
+  <div class="card" style="font-family:monospace;font-size:13px;">
+    <span style="color:var(--accent);">1.</span> Leer <code>valor</code> desde memoria → registro del CPU<br>
+    <span style="color:var(--accent);">2.</span> Sumar 1 al valor en el registro<br>
+    <span style="color:var(--accent);">3.</span> Escribir el registro de vuelta en memoria
+  </div>
+
+  <p style="margin-top:0.75rem;">Si dos hilos ejecutan esto simultáneamente, el segundo puede leer el valor viejo antes de que el primero lo haya escrito. Ambos leen 5, ambos calculan 6, ambos escriben 6. Se pierde un incremento.</p>
+
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía — el pizarrón de ventas</div>
+    <p style="margin:0;font-size:14px;">Dos vendedores ven un pizarrón que dice "ventas: 50". Ambos van a sumar 1 al mismo tiempo. Ambos leen 50, ambos calculan 51, ambos escriben 51. El resultado debería ser 52, pero quedó en 51. Se perdió una venta.</p>
+  </div>
+
+<pre>// Carrera.java — demostración de condición de carrera
+public class Carrera {
+
+    static class Contador {
+        int valor = 0;
+
+        // PROBLEMA: valor++ no es atómica
+        // Tres hilos pueden pisarse en los pasos leer/sumar/escribir
+        void inc() {
+            valor++;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Contador c = new Contador();
+
+        // La misma tarea: incrementar 100.000 veces
+        Runnable tarea = () -> {
+            for (int i = 0; i &lt; 100_000; i++) c.inc();
+        };
+
+        // Tres hilos ejecutan la tarea simultáneamente sobre el mismo objeto
+        Thread t1 = new Thread(tarea);
+        Thread t2 = new Thread(tarea);
+        Thread t3 = new Thread(tarea);
+
+        t1.start(); t2.start(); t3.start();
+        t1.join();  t2.join();  t3.join();
+
+        // Debería imprimir 300.000, pero casi nunca lo hace
+        System.out.println("Esperado=300000, Obtenido=" + c.valor);
+    }
+}</pre>
+
+  <div class="danger-box">La condición de carrera no siempre produce el error. A veces el resultado es correcto por azar de timing. Eso la hace peligrosa: puede pasar a producción sin detectarse y fallar solo bajo carga alta.</div>
+
+  <hr>
+  <h3>Solución 1 — <code>synchronized</code></h3>
+  <p>El modificador <code>synchronized</code> en un método le pone un <strong>candado</strong> al objeto. Solo un hilo a la vez puede ejecutar métodos <code>synchronized</code> del mismo objeto. Los demás quedan BLOCKED hasta que el hilo actual termine y libere el candado.</p>
+
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía — el baño con llave</div>
+    <p style="margin:0;font-size:14px;">El que entra cierra con llave. Los demás hacen fila afuera. Cuando sale, el siguiente puede entrar. Garantiza que nadie comparte el espacio, pero si hay mucha gente la fila crece.</p>
+  </div>
+
+  <h3>Solución 2 — <code>AtomicInteger</code></h3>
+  <p><code>AtomicInteger</code> usa instrucciones especiales del procesador (CAS: <em>Compare-And-Swap</em>) que son atómicas por hardware. No bloquea el hilo: si detecta conflicto, reintenta automáticamente. Es más eficiente que <code>synchronized</code> para contadores simples.</p>
+
+<pre>// ContadorSeguro.java — dos soluciones al mismo problema
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ContadorSeguro {
+
+    // SOLUCIÓN 1: synchronized
+    // El candado garantiza que solo un hilo ejecuta inc() o get() a la vez
+    static class ContadorSync {
+        private int valor = 0;
+
+        // synchronized = candado sobre 'this' (este objeto)
+        // Si t1 está en inc(), t2 queda BLOCKED hasta que t1 salga
+        public synchronized void inc() { valor++; }
+        public synchronized int get()  { return valor; }
+    }
+
+    // SOLUCIÓN 2: AtomicInteger
+    // Usa instrucción CAS del procesador: atómica por hardware, sin bloquear hilos
+    static class ContadorAtomic {
+        AtomicInteger valor = new AtomicInteger(0);
+
+        // incrementAndGet() = leer + sumar 1 + escribir, como una sola instrucción
+        void inc() { valor.incrementAndGet(); }
+        int get()  { return valor.get(); }
+    }
+
+    // Método auxiliar: ejecuta una prueba y mide cuánto tiempo tarda
+    private static void correrPrueba(String nombre, Runnable test) {
+        long t0 = System.currentTimeMillis();
+        test.run();
+        long t1 = System.currentTimeMillis();
+        System.out.println(nombre + " tomó " + (t1 - t0) + " ms\n");
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        // Prueba 1: synchronized
+        correrPrueba("ContadorSync", () -> {
+            ContadorSync c = new ContadorSync();
+            Runnable tarea = () -> { for (int i = 0; i &lt; 100_000; i++) c.inc(); };
+            Thread t1 = new Thread(tarea), t2 = new Thread(tarea), t3 = new Thread(tarea);
+            try {
+                t1.start(); t2.start(); t3.start();
+                t1.join();  t2.join();  t3.join();
+            } catch (InterruptedException ignored) {}
+            System.out.println("Sync => " + c.get());   // siempre 300.000
+        });
+
+        // Prueba 2: AtomicInteger — mismo resultado, menor tiempo
+        correrPrueba("ContadorAtomic", () -> {
+            ContadorAtomic c = new ContadorAtomic();
+            Runnable tarea = () -> { for (int i = 0; i &lt; 100_000; i++) c.inc(); };
+            Thread t1 = new Thread(tarea), t2 = new Thread(tarea), t3 = new Thread(tarea);
+            try {
+                t1.start(); t2.start(); t3.start();
+                t1.join();  t2.join();  t3.join();
+            } catch (InterruptedException ignored) {}
+            System.out.println("Atomic => " + c.get()); // siempre 300.000
+        });
+    }
+}</pre>
+
+  <hr>
+  <h3>Solución 3 — Productor/consumidor con <code>wait()</code>/<code>notifyAll()</code></h3>
+  <p>A veces no basta con exclusión mutua: un hilo necesita <strong>esperar a que otro produzca un dato</strong>. Para eso existe la coordinación por condición.</p>
+
+  <div class="analogy-box">
+    <div class="analogy-title">Analogía — cocina y mesero</div>
+    <p style="margin:0;font-size:14px;">El cocinero (productor) prepara platos y los deja en la ventanilla. El mesero (consumidor) los recoge. Si la ventanilla está llena, el cocinero espera. Si está vacía, el mesero espera. Cuando uno termina, avisa al otro.</p>
+  </div>
+
+<pre>// Buffer1Elemento.java — patrón productor/consumidor
+public class Buffer1Elemento {
+
+    static class Buffer1 {
+        private Integer dato = null;  // null = vacío, !null = lleno
+
+        // El productor llama put() para dejar un dato
+        public synchronized void put(int x) throws InterruptedException {
+            // IMPORTANTE: usar while, no if
+            // Al despertar del wait(), otro hilo pudo haber ocupado el espacio
+            // El while re-verifica la condición antes de continuar
+            while (dato != null) {
+                wait();    // buffer lleno: libero el candado y me duermo
+            }
+            dato = x;      // deposito el dato en el buffer
+            notifyAll();   // aviso a todos los que esperan (en especial al consumidor)
+        }
+
+        // El consumidor llama take() para retirar un dato
+        public synchronized int take() throws InterruptedException {
+            while (dato == null) {
+                wait();    // buffer vacío: libero el candado y me duermo
+            }
+            int x = dato;  // tomo el dato
+            dato = null;   // marco el buffer como vacío
+            notifyAll();   // aviso al productor que hay espacio libre
+            return x;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Buffer1 buf = new Buffer1();
+
+        // Productor: deposita los números 1..5 en el buffer
+        Thread productor = new Thread(() -> {
+            try {
+                for (int i = 1; i &lt;= 5; i++) {
+                    buf.put(i);
+                    System.out.println("Puso: " + i);
+                }
+            } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }, "Productor");
+
+        // Consumidor: retira 5 elementos del buffer
+        Thread consumidor = new Thread(() -> {
+            try {
+                for (int i = 1; i &lt;= 5; i++) {
+                    int x = buf.take();
+                    System.out.println("Tomó: " + x);
+                }
+            } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }, "Consumidor");
+
+        productor.start(); consumidor.start();
+        productor.join();  consumidor.join();
+        System.out.println("Fin");
+    }
+}</pre>
+
+  <div class="success-box">Patrón clave: siempre <code>while</code> con <code>wait()</code>, nunca <code>if</code>. Al despertar, la condición puede haber cambiado otra vez. El <code>while</code> la re-verifica antes de continuar.</div>
+
+  <h3>Resumen de mecanismos</h3>
+  <table>
+    <tr><th>Mecanismo</th><th>Cuándo usarlo</th><th>Costo relativo</th></tr>
+    <tr><td><code>synchronized</code></td><td>Exclusión mutua: solo un hilo a la vez en una sección</td><td>Medio — bloquea hilos en espera</td></tr>
+    <tr><td><code>AtomicInteger</code></td><td>Contador o referencia simple compartida</td><td>Bajo — sin bloqueo de hilo</td></tr>
+    <tr><td><code>wait/notifyAll</code></td><td>Esperar una condición (buffer lleno/vacío)</td><td>Medio — cede el monitor temporalmente</td></tr>
+  </table>
+</div>
+
+<!-- ═══════ 6. SIMULADOR ═══════ -->
+<div id="simulador" class="section">
+  <h2>Simulador de ejecución</h2>
+  <p>Selecciona un programa para ver su descripción, código y salida simulada. Úsalo para predecir qué pasará antes de compilar.</p>
+
+  <div class="sim-btns" id="sim-btns">
+    <button onclick="loadSim('th01')" id="btn-th01">Crear hilo</button>
+    <button onclick="loadSim('th02')" id="btn-th02">Join</button>
+    <button onclick="loadSim('th03')" id="btn-th03">Sleep</button>
+    <button onclick="loadSim('th04')" id="btn-th04">Condición de carrera</button>
+    <button onclick="loadSim('th04b')" id="btn-th04b">Contador seguro</button>
+    <button onclick="loadSim('th05')" id="btn-th05">Productor/consumidor</button>
+  </div>
+
+  <div id="sim-hint" style="color:var(--text3);font-size:14px;padding:1rem 0;">Selecciona un programa arriba para comenzar.</div>
+
+  <div id="sim-container" style="display:none;">
+    <div class="sim-desc" id="sim-desc-box">
+      <div class="sim-desc-title">¿Qué hace este programa?</div>
+      <div id="sim-desc-text"></div>
+    </div>
+    <div class="sim-panel">
+      <div>
+        <p style="font-size:12px;font-weight:500;color:var(--text3);margin-bottom:4px;">CÓDIGO</p>
+        <div class="sim-code" id="sim-code-view"></div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:500;color:var(--text3);margin-bottom:4px;">SALIDA SIMULADA</p>
+        <div class="sim-output" id="sim-output">Presiona ▶ Ejecutar para ver la salida</div>
+        <button class="run-btn" onclick="runSim()">▶ Ejecutar</button>
+        <p style="font-size:11px;color:var(--text3);margin-top:6px;" id="sim-note"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ 7. PRÁCTICA Y QUIZ ═══════ -->
+<div id="practica" class="section">
+  <h2>Práctica</h2>
+  <p>Trabaja los archivos en orden. Cada uno construye sobre el anterior.</p>
+  <div class="info-box" style="margin-bottom:1.5rem;">Requisito: JDK 11 o superior. Compilar con <code>javac NombreArchivo.java</code> y ejecutar con <code>java NombreClase</code>.</div>
+
+  <div class="file-row"><div><span class="badge badge-purple">Paso 1</span> <span class="fname">SinRunnable.java</span><div class="fdesc">Crear un hilo extendiendo Thread. Verificar nombres con getName().</div></div></div>
+  <div class="file-row"><div><span class="badge badge-purple">Paso 2</span> <span class="fname">ConRunnable.java</span><div class="fdesc">Mismo resultado con Runnable + lambda. Comparar los dos enfoques.</div></div></div>
+  <div class="file-row"><div><span class="badge badge-purple">Paso 3</span> <span class="fname">RunnableJoin.java</span><div class="fdesc">Dos hilos comparten la misma tarea. Observar que join() garantiza el mensaje final.</div></div></div>
+  <div class="file-row"><div><span class="badge badge-amber">Paso 4</span> <span class="fname">SleepYNombre.java</span><div class="fdesc">Ejecutar 3 veces. ¿El orden de A y B es siempre igual? ¿Por qué no?</div></div></div>
+  <div class="file-row"><div><span class="badge badge-red">Paso 5</span> <span class="fname">Carrera.java</span><div class="fdesc">Ver el resultado menor a 300.000. Ejecutar 3 veces y anotar los valores obtenidos.</div></div></div>
+  <div class="file-row"><div><span class="badge badge-teal">Paso 6</span> <span class="fname">ContadorSeguro.java</span><div class="fdesc">Comparar synchronized vs AtomicInteger en resultado y tiempo de ejecución.</div></div></div>
+  <div class="file-row"><div><span class="badge badge-teal">Paso 7</span> <span class="fname">Buffer1Elemento.java</span><div class="fdesc">Rastrear el flujo de wait/notifyAll. ¿Qué pasa si cambias el while por if?</div></div></div>
+
+  <hr>
+  <h2>Quiz</h2>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:1.5rem;">Selecciona la respuesta correcta en cada pregunta. Al terminar presiona "Verificar".</p>
+
+  <!-- Q1 -->
+  <div class="quiz-q" id="q1">
+    <p class="qtext">1. Un método marcado con <code>synchronized</code> garantiza que:</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q1" value="a"><span class="opt-text">El método se ejecuta más rápido porque tiene prioridad del procesador.</span></label>
+      <label class="quiz-option"><input type="radio" name="q1" value="b"><span class="opt-text">Solo un hilo a la vez puede ejecutarlo en el mismo objeto. Los demás esperan en estado BLOCKED hasta que el hilo actual lo libere.</span></label>
+      <label class="quiz-option"><input type="radio" name="q1" value="c"><span class="opt-text">El método puede ser llamado simultáneamente por varios hilos sin ningún problema.</span></label>
+      <label class="quiz-option"><input type="radio" name="q1" value="d"><span class="opt-text">El hilo que llama al método queda bloqueado hasta que otro hilo lo desbloquee.</span></label>
+    </div>
+    <div class="quiz-result" id="r1"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-q" id="q2">
+    <p class="qtext">2. ¿Qué ocurre cuando un hilo llama a <code>Thread.sleep(500)</code>?</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q2" value="a"><span class="opt-text">El programa completo se detiene durante 500 milisegundos.</span></label>
+      <label class="quiz-option"><input type="radio" name="q2" value="b"><span class="opt-text">El hilo que llamó sleep pasa a estado TERMINATED por 500 ms y luego reinicia.</span></label>
+      <label class="quiz-option"><input type="radio" name="q2" value="c"><span class="opt-text">Solo ese hilo se pausa durante 500 ms (estado TIMED_WAITING). Los demás hilos del proceso siguen ejecutándose normalmente.</span></label>
+      <label class="quiz-option"><input type="radio" name="q2" value="d"><span class="opt-text">El hilo libera todos los candados que tiene y espera a que otro lo despierte.</span></label>
+    </div>
+    <div class="quiz-result" id="r2"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-q" id="q3">
+    <p class="qtext">3. ¿Cuál es el estado inicial de un hilo recién creado con <code>new Thread(...)</code>, antes de llamar <code>start()</code>?</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q3" value="a"><span class="opt-text">RUNNABLE — listo para ejecutarse en cualquier momento.</span></label>
+      <label class="quiz-option"><input type="radio" name="q3" value="b"><span class="opt-text">WAITING — esperando que alguien lo inicie.</span></label>
+      <label class="quiz-option"><input type="radio" name="q3" value="c"><span class="opt-text">NEW — el objeto Thread existe pero el sistema operativo aún no lo conoce.</span></label>
+      <label class="quiz-option"><input type="radio" name="q3" value="d"><span class="opt-text">BLOCKED — bloqueado hasta recibir una señal de inicio.</span></label>
+    </div>
+    <div class="quiz-result" id="r3"></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-q" id="q4">
+    <p class="qtext">4. Tres hilos suman 1 a una variable compartida 100.000 veces cada uno. El resultado final es 263.412, no 300.000. ¿Qué causó la pérdida de incrementos?</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q4" value="a"><span class="opt-text">Un desbordamiento de entero: el tipo <code>int</code> no soporta valores tan altos.</span></label>
+      <label class="quiz-option"><input type="radio" name="q4" value="b"><span class="opt-text">La operación <code>valor++</code> tiene tres pasos internos. Dos hilos pueden leer el mismo valor antes de que el otro lo escriba, y uno de los incrementos queda sobreescrito.</span></label>
+      <label class="quiz-option"><input type="radio" name="q4" value="c"><span class="opt-text">El scheduler limita cuántas veces puede ejecutarse un hilo.</span></label>
+      <label class="quiz-option"><input type="radio" name="q4" value="d"><span class="opt-text">Los hilos no comparten variables; cada uno tiene su propia copia del contador.</span></label>
+    </div>
+    <div class="quiz-result" id="r4"></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-q" id="q5">
+    <p class="qtext">5. Se prefiere implementar <code>Runnable</code> sobre extender <code>Thread</code> principalmente porque:</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q5" value="a"><span class="opt-text">Las clases que implementan <code>Runnable</code> crean hilos más rápidos que las que extienden <code>Thread</code>.</span></label>
+      <label class="quiz-option"><input type="radio" name="q5" value="b"><span class="opt-text">Java no permite herencia múltiple: si una clase extiende <code>Thread</code>, pierde la posibilidad de extender cualquier otra clase. <code>Runnable</code> evita ese problema.</span></label>
+      <label class="quiz-option"><input type="radio" name="q5" value="c"><span class="opt-text">La clase <code>Thread</code> fue marcada como obsoleta en versiones recientes de Java.</span></label>
+      <label class="quiz-option"><input type="radio" name="q5" value="d"><span class="opt-text">Solo <code>Runnable</code> puede acceder a variables definidas fuera del hilo.</span></label>
+    </div>
+    <div class="quiz-result" id="r5"></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-q" id="q6">
+    <p class="qtext">6. En el patrón productor/consumidor, ¿por qué se usa <code>while</code> en lugar de <code>if</code> junto a <code>wait()</code>?</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q6" value="a"><span class="opt-text">Porque <code>if</code> no puede usarse dentro de métodos <code>synchronized</code>.</span></label>
+      <label class="quiz-option"><input type="radio" name="q6" value="b"><span class="opt-text">Para que el hilo espere exactamente N iteraciones antes de continuar.</span></label>
+      <label class="quiz-option"><input type="radio" name="q6" value="c"><span class="opt-text">Porque al despertar del <code>wait()</code> otro hilo pudo haber cambiado la condición. El <code>while</code> la re-verifica antes de continuar, evitando actuar sobre datos incorrectos.</span></label>
+      <label class="quiz-option"><input type="radio" name="q6" value="d"><span class="opt-text">Para que solo el hilo productor pueda acceder al buffer.</span></label>
+    </div>
+    <div class="quiz-result" id="r6"></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-q" id="q7">
+    <p class="qtext">7. ¿Para qué sirve <code>t.join()</code>?</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q7" value="a"><span class="opt-text">Para combinar dos hilos en uno solo y continuar con un único flujo de ejecución.</span></label>
+      <label class="quiz-option"><input type="radio" name="q7" value="b"><span class="opt-text">Para que el hilo que hace la llamada espere a que el hilo <code>t</code> termine antes de continuar. Es una forma de sincronizar el fin de ejecución de un hilo.</span></label>
+      <label class="quiz-option"><input type="radio" name="q7" value="c"><span class="opt-text">Para iniciar dos hilos exactamente al mismo milisegundo.</span></label>
+      <label class="quiz-option"><input type="radio" name="q7" value="d"><span class="opt-text">Para detener el hilo <code>t</code> de forma permanente e inmediata.</span></label>
+    </div>
+    <div class="quiz-result" id="r7"></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-q" id="q8">
+    <p class="qtext">8. <code>AtomicInteger.incrementAndGet()</code> resuelve la condición de carrera porque:</p>
+    <div class="quiz-options">
+      <label class="quiz-option"><input type="radio" name="q8" value="a"><span class="opt-text">Internamente usa <code>synchronized</code>, exactamente igual que la solución con candado.</span></label>
+      <label class="quiz-option"><input type="radio" name="q8" value="b"><span class="opt-text">Convierte el número en un valor de solo lectura que ningún hilo puede modificar.</span></label>
+      <label class="quiz-option"><input type="radio" name="q8" value="c"><span class="opt-text">Usa una instrucción especial del procesador (CAS) que ejecuta leer, sumar y escribir como una sola operación indivisible, sin necesidad de bloquear otros hilos.</span></label>
+      <label class="quiz-option"><input type="radio" name="q8" value="d"><span class="opt-text">Crea una copia privada del contador para cada hilo y las suma al final.</span></label>
+    </div>
+    <div class="quiz-result" id="r8"></div>
+  </div>
+
+  <button class="quiz-btn" onclick="checkAll()">Verificar respuestas</button>
+  <p id="quiz-score" style="margin-top:1rem;font-size:15px;font-weight:500;"></p>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+  document.querySelectorAll('#main-nav button').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes("'"+id+"'"));
+  });
+}
+
+const CORRECT={q1:'b',q2:'c',q3:'c',q4:'b',q5:'b',q6:'c',q7:'b',q8:'c'};
+const EXP={
+  q1:"synchronized pone un candado en el objeto. El primer hilo en entrar lo adquiere; los demás quedan BLOCKED hasta que se libere.",
+  q2:"sleep() suspende únicamente el hilo que lo llama. El proceso sigue corriendo; otros hilos pueden avanzar durante ese tiempo.",
+  q3:"NEW es el estado inicial: el objeto Thread existe en Java pero el SO aún no creó el hilo. Pasa a RUNNABLE solo al llamar start().",
+  q4:"valor++ se compila en tres instrucciones. Si dos hilos las ejecutan entrelazadas, uno puede sobrescribir el trabajo del otro.",
+  q5:"Java no tiene herencia múltiple. Extender Thread consume la única herencia disponible. Runnable deja esa herencia libre.",
+  q6:"wait() libera el monitor y duerme el hilo. Al despertar, otro hilo pudo haber actuado. El while re-verifica antes de continuar.",
+  q7:"join() pone al hilo llamante en WAITING hasta que el hilo objetivo llega a TERMINATED. Es sincronización de fin de vida.",
+  q8:"CAS (Compare-And-Swap) es una instrucción del CPU que hace leer+comparar+escribir de forma indivisible, sin bloquear otros hilos."
+};
+
+function checkAll(){
+  let score=0;
+  const qs=Object.keys(CORRECT);
+  qs.forEach(q=>{
+    const sel=document.querySelector(`input[name="${q}"]:checked`);
+    const rEl=document.getElementById('r'+q.slice(1));
+    const opts=document.querySelectorAll(`#${q} .quiz-option`);
+    opts.forEach(o=>{o.classList.remove('correct','wrong');});
+    rEl.className='quiz-result';
+    if(!sel){rEl.className='quiz-result show fail';rEl.textContent="Sin respuesta.";return;}
+    const correct=CORRECT[q];
+    opts.forEach(o=>{
+      const v=o.querySelector('input').value;
+      if(v===correct) o.classList.add('correct');
+      else if(v===sel.value&&sel.value!==correct) o.classList.add('wrong');
+    });
+    if(sel.value===correct){
+      score++;
+      rEl.className='quiz-result show ok';
+      rEl.textContent="✓ Correcto. "+EXP[q];
+    } else {
+      rEl.className='quiz-result show fail';
+      rEl.textContent="✗ "+EXP[q];
+    }
+  });
+  const sc=document.getElementById('quiz-score');
+  const total=qs.length;
+  sc.textContent=`Resultado: ${score}/${total}`;
+  sc.style.color=score>=total-1?'var(--teal)':score>=Math.floor(total/2)?'var(--amber)':'var(--red)';
+}
+
+const SIM={
+  th01:{
+    label:'Crear hilo',
+    desc:'Muestra las dos formas de crear un hilo: extendiendo <code>Thread</code> y usando <code>Runnable</code> con lambda. En ambos casos el método <code>run()</code> se ejecuta en un hilo separado mientras <code>main</code> espera con <code>join()</code>. Útil para ver la diferencia entre el hilo principal y el hilo creado.',
+    note:'Salida determinística: main siempre imprime primero. join() garantiza que "Fin main" aparece al final.',
+    code:`// ConRunnable.java
+public class ConRunnable {
+  public static void main(String[] args) throws Exception {
+    System.out.println("Hola desde main en: "
+        + Thread.currentThread().getName());
+
+    // Lambda que implementa Runnable.run()
+    Runnable tarea = () ->
+      System.out.println("Hola desde run() en: "
+          + Thread.currentThread().getName());
+
+    Thread t = new Thread(tarea, "Hilo-1");
+    t.start();  // crea el hilo del SO, ejecuta run() en él
+    t.join();   // main espera a que t termine
+
+    System.out.println("Fin main");
+  }
+}`,
+    run:async(p,d)=>{
+      await p('Hola desde main en: main');
+      await d(120);
+      await p('Hola desde run() en: Hilo-1');
+      await p('Fin main');
+    }
+  },
+  th02:{
+    label:'Join',
+    desc:'Demuestra que la misma tarea <code>Runnable</code> puede asignarse a varios hilos distintos. Los dos hilos pueden ejecutarse en cualquier orden, pero el mensaje final solo aparece cuando <strong>ambos</strong> terminaron, gracias a los dos <code>join()</code>. Cada vez que ejecutes verás posiblemente un orden diferente.',
+    note:'El orden de Trabajador-1 y Trabajador-2 puede invertirse entre ejecuciones. El mensaje final siempre aparece último.',
+    code:`// RunnableJoin.java
+public class RunnableJoin {
+  public static void main(String[] args) throws Exception {
+    // Un solo Runnable reutilizado en dos hilos
+    Runnable tarea = () ->
+      System.out.println("Trabajo en "
+          + Thread.currentThread().getName());
+
+    Thread t1 = new Thread(tarea, "Trabajador-1");
+    Thread t2 = new Thread(tarea, "Trabajador-2");
+    t1.start();
+    t2.start();
+    // join() = punto de sincronización: esperar a que ambos terminen
+    t1.join();
+    t2.join();
+    System.out.println("Listo: todos terminaron");
+  }
+}`,
+    run:async(p,d)=>{
+      const o=Math.random()>0.5?['Trabajador-1','Trabajador-2']:['Trabajador-2','Trabajador-1'];
+      await d(80);
+      await p('Trabajo en '+o[0]);
+      await d(40);
+      await p('Trabajo en '+o[1]);
+      await p('Listo: todos terminaron');
+    }
+  },
+  th03:{
+    label:'Sleep',
+    desc:'Muestra cómo <code>Thread.sleep()</code> pausa voluntariamente un hilo y cede la CPU. Con dos workers (A y B) cada uno haciendo 3 pasos con pausas de 300ms, el resultado es un entrelazado impredecible: el scheduler decide en qué orden retoman los hilos. Ejecuta varias veces para ver que el orden cambia.',
+    note:'Orden variable: cada ejecución puede intercalar A y B de forma diferente.',
+    code:`// SleepYNombre.java
+public class SleepYNombre {
+  static class Worker implements Runnable {
+    private final String nombre;
+    Worker(String nombre) { this.nombre = nombre; }
+    public void run() {
+      for (int i = 1; i <= 3; i++) {
+        System.out.println(nombre + " paso " + i
+            + " en " + Thread.currentThread().getName());
+        try {
+          Thread.sleep(300); // cede CPU por 300ms
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+  }
+  public static void main(String[] args) throws Exception {
+    Thread a = new Thread(new Worker("A"), "Hilo-A");
+    Thread b = new Thread(new Worker("B"), "Hilo-B");
+    a.start(); b.start();
+    a.join();  b.join();
+    System.out.println("Terminaron A y B");
+  }
+}`,
+    run:async(p,d)=>{
+      const seq=[['A',1],['B',1],['A',2],['B',2],['B',3],['A',3]];
+      for(const[n,i] of seq){await p(`${n} paso ${i} en Hilo-${n}`);await d(110);}
+      await p('Terminaron A y B');
+    }
+  },
+  th04:{
+    label:'Condición de carrera',
+    desc:'Tres hilos incrementan el mismo contador sin protección. Como <code>valor++</code> no es atómica (son tres instrucciones del procesador), los hilos se "pisan" entre sí: leen el mismo valor, calculan el mismo resultado y uno de los incrementos se pierde. El resultado varía en cada ejecución y siempre es menor a 300.000.',
+    note:'Resultado no determinístico. Cada ejecución pierde una cantidad diferente de incrementos.',
+    code:`// Carrera.java
+public class Carrera {
+  static class Contador {
+    int valor = 0;
+    // PROBLEMA: valor++ no es atómica (leer, sumar, escribir)
+    void inc() { valor++; }
+  }
+  public static void main(String[] args) throws Exception {
+    Contador c = new Contador();
+    Runnable tarea = () -> {
+      for (int i = 0; i < 100_000; i++) c.inc();
+    };
+    Thread t1=new Thread(tarea),
+           t2=new Thread(tarea),
+           t3=new Thread(tarea);
+    t1.start(); t2.start(); t3.start();
+    t1.join();  t2.join();  t3.join();
+    // Casi nunca imprime 300.000
+    System.out.println("Esperado=300000, Obtenido="+c.valor);
+  }
+}`,
+    run:async(p,d)=>{
+      await p('T1, T2, T3 iniciando...');
+      await d(400);
+      const perdidas=Math.floor(Math.random()*80000)+15000;
+      await p(`Esperado=300000, Obtenido=${(300000-perdidas).toLocaleString('es-CO')}`);
+      await p(`→ Perdidos: ${perdidas.toLocaleString('es-CO')} (condición de carrera)`);
+    }
+  },
+  th04b:{
+    label:'Contador seguro',
+    desc:'Resuelve la condición de carrera de dos formas: con <code>synchronized</code>, que pone un candado y hace esperar a los hilos, y con <code>AtomicInteger</code>, que usa instrucciones especiales del procesador (CAS) sin bloquear. Ambas garantizan 300.000, pero <code>AtomicInteger</code> es más rápido porque evita el overhead de bloquear y desbloquear hilos.',
+    note:'Ambos dan 300.000 siempre. AtomicInteger es más rápido porque no bloquea hilos en espera.',
+    code:`// ContadorSeguro.java
+import java.util.concurrent.atomic.AtomicInteger;
+public class ContadorSeguro {
+  static class ContadorSync {
+    private int valor = 0;
+    // synchronized: candado sobre 'this'
+    public synchronized void inc() { valor++; }
+    public synchronized int get()  { return valor; }
+  }
+  static class ContadorAtomic {
+    AtomicInteger valor = new AtomicInteger(0);
+    // incrementAndGet(): atómica por hardware (CAS)
+    void inc() { valor.incrementAndGet(); }
+    int get()  { return valor.get(); }
+  }
+  private static void correrPrueba(String nombre, Runnable test) {
+    long t0 = System.currentTimeMillis();
+    test.run();
+    System.out.println(nombre+" tomó "
+        +(System.currentTimeMillis()-t0)+" ms\n");
+  }
+  public static void main(String[] args) throws Exception {
+    correrPrueba("ContadorSync", () -> {
+      ContadorSync c=new ContadorSync();
+      Runnable t=()->{ for(int i=0;i<100_000;i++) c.inc(); };
+      Thread t1=new Thread(t),t2=new Thread(t),t3=new Thread(t);
+      try{ t1.start();t2.start();t3.start();
+           t1.join();t2.join();t3.join(); }
+      catch(InterruptedException ig){}
+      System.out.println("Sync => "+c.get()); // 300000
+    });
+    correrPrueba("ContadorAtomic", () -> {
+      ContadorAtomic c=new ContadorAtomic();
+      Runnable t=()->{ for(int i=0;i<100_000;i++) c.inc(); };
+      Thread t1=new Thread(t),t2=new Thread(t),t3=new Thread(t);
+      try{ t1.start();t2.start();t3.start();
+           t1.join();t2.join();t3.join(); }
+      catch(InterruptedException ig){}
+      System.out.println("Atomic => "+c.get()); // 300000
+    });
+  }
+}`,
+    run:async(p,d)=>{
+      await p('ContadorSync iniciando...');
+      await d(350);
+      const ms1=38+Math.floor(Math.random()*20);
+      await p('Sync => 300000');
+      await p('ContadorSync tomó '+ms1+' ms\n');
+      await p('ContadorAtomic iniciando...');
+      await d(200);
+      const ms2=12+Math.floor(Math.random()*10);
+      await p('Atomic => 300000');
+      await p('ContadorAtomic tomó '+ms2+' ms\n');
+    }
+  },
+  th05:{
+    label:'Productor/consumidor',
+    desc:'Implementa la coordinación entre dos hilos con roles opuestos: el productor deposita datos en un buffer de un solo elemento, y el consumidor los retira. Usan <code>wait()</code> para dormirse cuando no pueden avanzar (buffer lleno o vacío) y <code>notifyAll()</code> para avisar cuando la situación cambia. Es el patrón de sincronización más común en sistemas concurrentes.',
+    note:'Los pares Puso/Tomó están coordinados: el consumidor no puede tomar lo que no se ha depositado.',
+    code:`// Buffer1Elemento.java
+public class Buffer1Elemento {
+  static class Buffer1 {
+    private Integer dato = null; // null=vacío
+    public synchronized void put(int x)
+        throws InterruptedException {
+      // while (no if): re-verifica al despertar
+      while (dato != null) wait();
+      dato = x;
+      notifyAll(); // avisa al consumidor
+    }
+    public synchronized int take()
+        throws InterruptedException {
+      while (dato == null) wait();
+      int x = dato; dato = null;
+      notifyAll(); // avisa al productor
+      return x;
+    }
+  }
+  public static void main(String[] args) throws Exception {
+    Buffer1 buf = new Buffer1();
+    Thread productor = new Thread(() -> {
+      try {
+        for (int i=1;i<=5;i++) {
+          buf.put(i);
+          System.out.println("Puso: "+i);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }, "Productor");
+    Thread consumidor = new Thread(() -> {
+      try {
+        for (int i=1;i<=5;i++) {
+          int x=buf.take();
+          System.out.println("Tomó: "+x);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }, "Consumidor");
+    productor.start(); consumidor.start();
+    productor.join();  consumidor.join();
+    System.out.println("Fin");
+  }
+}`,
+    run:async(p,d)=>{
+      for(let i=1;i<=5;i++){await p('Puso: '+i);await d(80);await p('Tomó: '+i);await d(80);}
+      await p('Fin');
+    }
+  }
+};
+
+let currentSim=null;
+function loadSim(key){
+  currentSim=key;
+  document.querySelectorAll('.sim-btns button').forEach(b=>{
+    b.classList.toggle('active-sim',b.id==='btn-'+key);
+  });
+  document.getElementById('sim-hint').style.display='none';
+  document.getElementById('sim-container').style.display='block';
+  document.getElementById('sim-desc-text').innerHTML=SIM[key].desc;
+  document.getElementById('sim-code-view').textContent=SIM[key].code;
+  document.getElementById('sim-output').textContent='Presiona ▶ Ejecutar para ver la salida';
+  document.getElementById('sim-note').textContent=SIM[key].note;
+}
+
+async function runSim(){
+  if(!currentSim)return;
+  const out=document.getElementById('sim-output');
+  out.textContent='';
+  const p=async line=>{out.textContent+=line+'\n';out.scrollTop=out.scrollHeight;await new Promise(r=>setTimeout(r,90));};
+  const d=ms=>new Promise(r=>setTimeout(r,ms));
+  await SIM[currentSim].run(p,d);
+}
+</script>
+</body>
+</html>
